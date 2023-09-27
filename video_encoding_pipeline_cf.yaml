@@ -32,7 +32,7 @@ Parameters:
   DockerImage:
     Description: The name of the Docker image in AWS ECR
     Type: String
-    Default: my-batch-job
+    Default: ab-av1
   CIDR:
     Description: Allow inbound traffic to the cluster from this CIDR range
     Type: String
@@ -42,11 +42,11 @@ Parameters:
   Subnets:
     Type: List<AWS::EC2::Subnet::Id>
     Description: Subnets for Autoscaling Group. Please select at least 2.
-    Default: "subnet-0674873ca5f4ded4b,subnet-091db0e55f47c02f1"
+    Default: "subnet-8f7f39f5,subnet-61fe6a2d,subnet-6bccf602"
   VpcID:
     Type: AWS::EC2::VPC::Id
     Description: The vpc within which to place EC2 AutoScaling Group
-    Default: vpc-0589d8c5e37f2d3ff
+    Default: vpc-ddf5c5b5
 
 Resources:
   # S3 BUCKET FOR EVENT NOTIFICATIONS

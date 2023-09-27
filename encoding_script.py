@@ -218,49 +218,15 @@ if __name__ == '__main__':
         if not file_downloaded:
             print("Failed to download file")
         else:
-            for current_encode_type in encode_types:
-                file_metadata = get_video_metadata(input_file_name)
-                if file_metadata:
-                    video_width = file_metadata.get("streams", [{"width": 0}])[0]["width"]
-                    video_bitrate = file_metadata.get("streams", None)
-                    if video_bitrate:
-                        video_bitrate = video_bitrate[0]["bit_rate"]
-                    files_to_upload = []
-                    output_files = []
-                    encode_commands = []
-                    if len(required_resolutions) == 0 and video_width:
-                        required_resolutions.append(video_width)
-
-                    for video_resolution in required_resolutions:
-                        current_options = ""
-                        if video_resolution.lower().strip() != str(video_width):
-                            current_options = "-y -vf scale={0}:-2,setsar=1:1".format(video_resolution)
-                        input_file_key_simple = str(input_file_key).split('/')[-1]
-                        input_file_key_simple = input_file_key_simple.replace('[x264]', '').replace('[x265]',
-                                                                                                    '').strip()
-                        file_name_split = get_sane_file_name(input_file_key_simple).split(".")
-                        file_name_split[0] = str(remove_resolutions_from_file(file_name_split[0])).strip()
-                        output_directory_name = file_name_split[0] + sep + current_encode_type
-                        path_creator(output_directory_name)
-                        downloaded_paths.append(path.abspath(file_name_split[0]))
-                        final_output_name = "{0} [{1}].{2}".format(file_name_split[0], video_resolution,
-                                                                   file_name_split[-1])
-                        final_output_name = path.abspath(
-                            file_name_split[0] + sep + current_encode_type + sep + final_output_name)
-                        current_encode_command = build_second_pass_ffmpeg_command(current_encode_type, input_file_name,
-                                                                                  current_options,
-                                                                                  final_output_name, video_bitrate)
-                        encode_commands.append(current_encode_command)
-                        output_files.append(final_output_name)
-                    final_encode = ' && '.join(encode_commands)
-                    execute_encode(final_encode)
-                    if len(output_files) > 0:
-                        for current_file in output_files:
-                            upload_key_name = "Output/{0}/{1}/{2}".format(str(current_file).split('/')[-3],
-                                                                          str(current_file).split('/')[-2],
-                                                                          str(current_file).split('/')[-1])
-                            upload_file_to_s3(s3_client, output_bucket_name, current_file, upload_key_name)
-                        delete_downloaded_resource(set(downloaded_paths))
+            final_encode = "ab-av1 encode --crf 32 --preset 7 -i " + input_file_name
+            execute_encode(final_encode)
+            if len(output_files) > 0:
+                for current_file in output_files:
+                    upload_key_name = "Output/{0}/{1}/{2}".format(str(current_file).split('/')[-3],
+                                                                str(current_file).split('/')[-2],
+                                                                str(current_file).split('/')[-1])
+                    upload_file_to_s3(s3_client, output_bucket_name, current_file, upload_key_name)
+            delete_downloaded_resource(set(downloaded_paths))
         delete_file_from_s3(s3_client, input_bucket_name, input_file_key)
         delete_downloaded_resource([input_file_name])
     exit(0)
